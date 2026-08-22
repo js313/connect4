@@ -1,0 +1,4 @@
+1. Better Error handling than ASSERTS, better invalid input handling
+2. Better Logger
+3. Make protocols like uci, xboard
+4. Option to set a board to prefilled values
