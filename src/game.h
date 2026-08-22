@@ -6,12 +6,14 @@
 #include "board.h"
 #include "defs.h"
 #include "input.h"
+#include "moveEngine.h"
 
 class Game
 {
     bool isGameOver;
     SIDE side;
     std::unique_ptr<Board> pos;
+    std::unique_ptr<MoveEngine> moveEngine;
 
 public:
     bool endProgram;

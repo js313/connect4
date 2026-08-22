@@ -4,6 +4,7 @@
 Game::Game()
 {
     pos = std::make_unique<Board>();
+    moveEngine = std::make_unique<MoveEngine>();
     pos->Show();
     isGameOver = false;
     endProgram = false;
@@ -81,19 +82,27 @@ SIDE Game::CheckGameState()
     return NONE;
 }
 
-void Game::Update()
+void Game::Update(bool ispvp = true)
 {
     SIDE winningSide = NONE;
     while (!isGameOver)
     {
         int row;
-        std::cout << (side ? "BLACK> " : "WHITE> ");
-        std::string command = input->GetCommand();
-        if (command == "quit")
-            break;
-        row = stoi(command);
-        row--;
-        pos->MakeMove(row, side);
+        if (side && !ispvp)
+        {
+            Move bestMove = moveEngine->GetNextBestMove(pos);
+            pos->MakeMove(bestMove.row, side);
+        }
+        else
+        {
+            std::cout << (side ? "BLACK> " : "WHITE> ");
+            std::string command = input->GetCommand();
+            if (command == "quit")
+                break;
+            row = stoi(command);
+            row--;
+            pos->MakeMove(row, side);
+        }
         winningSide = CheckGameState();
         side = SIDE(!side);
         pos->Show();
@@ -140,7 +149,11 @@ void Game::ProcessCommand(std::string &command)
     }
     else if (command == "pvp")
     {
-        Update();
+        Update(true);
+    }
+    else if (command == "pvc")
+    {
+        Update(false);
     }
     else if (command == "quit")
     {

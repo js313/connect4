@@ -136,3 +136,18 @@ bool Board::IsBoardFilled()
 {
     return false;
 }
+
+std::list<Move> Board::GenerateAllMoves(SIDE side)
+{
+    std::list<Move> legalMoveList;
+    for (int i = 0; i < ROWS; i++)
+    {
+        int col = GetLastEmptyCellOfRow(i);
+        if (col > -1)
+        {
+            legalMoveList.push_back({i, col, side});
+        }
+    }
+
+    return legalMoveList;
+}

@@ -2,6 +2,7 @@
 #define BOARD_H
 
 #include <stack>
+#include <list>
 #include <string>
 #include <iostream>
 
@@ -25,6 +26,7 @@ public:
     SIDE GetSideAt(int row, int col);
     void Show();
     bool IsBoardFilled();
+    std::list<Move> GenerateAllMoves(SIDE side);
 
     SIDE SetBoard(std::string &moves);
     void ResetBoard();
