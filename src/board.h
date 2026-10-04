@@ -19,7 +19,7 @@ class Board
 
 public:
     Board();
-    Move MakeMove(int col, SIDE side);
+    bool MakeMove(int col, SIDE side);
     void UnmakeLastMove();
     int GetLastEmptyCellOfRow(int row);
     Move GetLastMove();
@@ -28,6 +28,7 @@ public:
     bool IsBoardFilled();
     std::list<Move> GenerateAllMoves(SIDE side);
 
+    SIDE CheckBoardState();
     SIDE SetBoard(std::string &moves);
     void ResetBoard();
 };

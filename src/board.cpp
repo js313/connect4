@@ -36,13 +36,15 @@ void Board::ResetBoard()
 
 bool Board::IsMoveValid(Move move)
 {
-    return true;
+    return GetLastEmptyCellOfRow(move.row) == move.col;
 }
 
-Move Board::MakeMove(int row, SIDE side)
+bool Board::MakeMove(int row, SIDE side)
 {
     int col = GetLastEmptyCellOfRow(row);
-    Move move = {row, col, side};
+    Move move = {row, col, side, 0};
+    if (!IsMoveValid(move))
+        return false;
     // std::cout << row << " " << col << " " << side << " " << MASK(row, col) << " " << (((uint64_t)1) << ((uint)48)) << "\n";
 
     history.push(move);
@@ -55,7 +57,7 @@ Move Board::MakeMove(int row, SIDE side)
         p2bitboard |= MASK(row, col);
     }
 
-    return move;
+    return true;
 }
 
 void Board::UnmakeLastMove()
@@ -139,15 +141,65 @@ bool Board::IsBoardFilled()
 
 std::list<Move> Board::GenerateAllMoves(SIDE side)
 {
-    std::list<Move> legalMoveList;
+    std::list<Move> legalMoveList = std::list<Move>();
     for (int i = 0; i < ROWS; i++)
     {
         int col = GetLastEmptyCellOfRow(i);
-        if (col > -1)
-        {
-            legalMoveList.push_back({i, col, side});
-        }
+        if (col < 6)
+            legalMoveList.push_back({i, col, side, 0});
     }
 
     return legalMoveList;
+}
+
+SIDE Board::CheckBoardState()
+{
+    for (int j = COLS - 1; j >= 0; j--)
+    {
+        for (int i = 0; i < ROWS; i++)
+        {
+            if (i > ROWS - 3 && j < 3)
+                break;
+            SIDE side = GetSideAt(i, j);
+            if (side == NONE)
+                continue;
+            // RIGHT
+            int k = 0;
+            for (; k < 4 && i + k < ROWS; k++)
+            {
+                if (GetSideAt(i + k, j) != side)
+                    break;
+            }
+            if (k >= 4)
+                return side;
+            // DOWN
+            k = 0;
+            for (; k < 4 && j - k >= 0; k++)
+            {
+                if (GetSideAt(i, j - k) != side)
+                    break;
+            }
+            if (k >= 4)
+                return side;
+            // DOWN-RIGHT
+            k = 0;
+            for (; k < 4 && i + k < ROWS && j - k >= 0; k++)
+            {
+                if (GetSideAt(i + k, j - k) != side)
+                    break;
+            }
+            if (k >= 4)
+                return side;
+            // DOWN-LEFT
+            k = 0;
+            for (; k < 4 && i - k >= 0 && j - k >= 0; k++)
+            {
+                if (GetSideAt(i - k, j - k) != side)
+                    break;
+            }
+            if (k >= 4)
+                return side;
+        }
+    }
+    return NONE;
 }

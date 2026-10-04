@@ -20,7 +20,7 @@ public:
     std::unique_ptr<Input> input;
     Game();
 
-    void Update();
+    void Update(bool ispvp);
     SIDE CheckGameState();
     void Reset();
     void SetBoard(std::string &moves);

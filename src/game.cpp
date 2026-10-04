@@ -90,7 +90,7 @@ void Game::Update(bool ispvp = true)
         int row;
         if (side && !ispvp)
         {
-            Move bestMove = moveEngine->GetNextBestMove(pos);
+            Move bestMove = moveEngine->GetNextBestMove(pos, side);
             pos->MakeMove(bestMove.row, side);
         }
         else
@@ -164,6 +164,7 @@ void Game::ProcessCommand(std::string &command)
         std::cout << "Available commands:\n";
         std::cout << "  new  - Start a new game\n";
         std::cout << "  pvp  - Play player vs player\n";
+        std::cout << "  pvc  - Play player vs computer\n";
         std::cout << "  set  - Set the board with a sequence of moves\n";
         std::cout << "  quit - Exit the program\n";
         std::cout << "  help - Show this help message\n";
