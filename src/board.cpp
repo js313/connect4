@@ -28,15 +28,17 @@ SIDE Board::SetBoard(std::string &moves)
 
 void Board::ResetBoard()
 {
-    p1bitboard &= 0;
-    p2bitboard &= 0;
+    p1bitboard = 0;
+    p2bitboard = 0;
     while (!history.empty())
         history.pop();
 }
 
 bool Board::IsMoveValid(Move move)
 {
-    return GetLastEmptyCellOfRow(move.row) == move.col;
+    return move.row >= 0 && move.row < ROWS &&
+           move.col >= 0 && move.col < COLS &&
+           GetLastEmptyCellOfRow(move.row) == move.col;
 }
 
 bool Board::MakeMove(int row, SIDE side)
@@ -75,14 +77,18 @@ void Board::UnmakeLastMove()
 
 int Board::GetLastEmptyCellOfRow(int row)
 {
-    uint64_t mergedBoard = p1bitboard | p2bitboard;
-    uint64_t mask = (1 << row) << 16;
-    int emptyCell = 6;
+    if (row < 0 || row >= ROWS)
+        return COLS;
 
-    while (!(mergedBoard & mask) && emptyCell > 0)
+    uint64_t mergedBoard = p1bitboard | p2bitboard;
+    // Bitboard columns are encoded bottom-up from bit 56 toward bit 16.
+    uint64_t mask = static_cast<uint64_t>(1) << (56 + row);
+    int emptyCell = 0;
+
+    while ((mergedBoard & mask) && emptyCell < COLS)
     {
-        mask <<= 8;
-        emptyCell--;
+        mask >>= 8;
+        ++emptyCell;
     }
     return emptyCell;
 }
@@ -136,7 +142,12 @@ SIDE Board::GetSideAt(int row, int col)
 
 bool Board::IsBoardFilled()
 {
-    return false;
+    for (int row = 0; row < ROWS; ++row)
+    {
+        if (GetLastEmptyCellOfRow(row) < COLS)
+            return false;
+    }
+    return true;
 }
 
 std::list<Move> Board::GenerateAllMoves(SIDE side)
@@ -145,7 +156,7 @@ std::list<Move> Board::GenerateAllMoves(SIDE side)
     for (int i = 0; i < ROWS; i++)
     {
         int col = GetLastEmptyCellOfRow(i);
-        if (col < 6)
+        if (col < COLS)
             legalMoveList.push_back({i, col, side, 0});
     }
 
@@ -158,8 +169,6 @@ SIDE Board::CheckBoardState()
     {
         for (int i = 0; i < ROWS; i++)
         {
-            if (i > ROWS - 3 && j < 3)
-                break;
             SIDE side = GetSideAt(i, j);
             if (side == NONE)
                 continue;
