@@ -17,7 +17,7 @@ class MoveEngine
                         int alpha, int beta,
                         Move *bestMove);
 
-    int MiniMaxSearch(const std::unique_ptr<Board> &pos, SIDE sideToMove, SIDE perspective, int depth, int depthLimit);
+    int MiniMaxSearch(const std::unique_ptr<Board> &pos, SIDE sideToMove, SIDE perspective, int depth, int depthLimit, Move *bestMove);
 
 public:
     MoveEngine() = default;
