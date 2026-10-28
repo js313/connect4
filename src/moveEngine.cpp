@@ -138,6 +138,69 @@ int MoveEngine::AlphaBetaSearch(const std::unique_ptr<Board> &pos, SIDE sideToMo
                                 int alpha, int beta,
                                 Move *bestMove)
 {
+    const SIDE winner = pos->CheckBoardState();
+    if (winner != NONE)
+    {
+        const int score = winner == perspective ? MATE_SCORE - depth : -MATE_SCORE + depth;
+        return score;
+    }
+
+    if (pos->IsBoardFilled())
+        return 0;
+
+    if (depth >= depthLimit)
+        return EvaluatePos(pos, perspective);
+
+    std::list<Move> allMoves = pos->GenerateAllMoves(sideToMove);
+    if (allMoves.empty())
+        return 0;
+
+    // Move ordering for better alpha beta pruning
+    std::vector<Move> moves(allMoves.begin(), allMoves.end());
+    const int center = (ROWS - 1) / 2;
+    for (Move &move : moves)
+    {
+        pos->MakeMove(move.row, move.side);
+        move.score = pos->CheckBoardState() == sideToMove ? 1 : 0;
+        pos->UnmakeLastMove();
+    }
+    std::sort(moves.begin(), moves.end(), [](const Move &left, const Move &right)
+              {
+                  if (left.score != right.score)
+                      return left.score > right.score;
+                  return std::abs(left.row - center) < std::abs(right.row - center); });
+
+    bool maximizing = (sideToMove == perspective);
+    int bestScore = maximizing ? INT_MIN : INT_MAX;
+
+    for (auto &move : moves)
+    {
+        if (!pos->MakeMove(move.row, sideToMove))
+            continue;
+
+        move.score = AlphaBetaSearch(pos, SIDE(!sideToMove), perspective, depth + 1, depthLimit, alpha, beta, nullptr);
+        pos->UnmakeLastMove();
+
+        if ((maximizing && move.score > bestScore) || (!maximizing && move.score < bestScore))
+        {
+            bestScore = move.score;
+            if (bestMove != nullptr)
+            {
+                std::cout << move.row << " " << move.score << "\n";
+                *bestMove = move;
+            }
+        }
+
+        if (maximizing)
+            alpha = std::max(alpha, bestScore);
+        else
+            beta = std::min(beta, bestScore);
+
+        if (alpha >= beta)
+            break;
+    }
+
+    return bestScore;
 }
 
 Move MoveEngine::GetNextBestMove(const std::unique_ptr<Board> &pos, SIDE side)
@@ -145,7 +208,8 @@ Move MoveEngine::GetNextBestMove(const std::unique_ptr<Board> &pos, SIDE side)
     Move bestMove = {-1, -1, side, 0};
     std::list<Move> allMoves = pos->GenerateAllMoves(side);
 
-    int bs = MiniMaxSearch(pos, side, side, 0, 8, &bestMove);
+    // int bs = MiniMaxSearch(pos, side, side, 0, 8, &bestMove);
+    int bs = AlphaBetaSearch(pos, side, side, 0, 8, INT_MIN, INT_MAX, &bestMove);
     std::cout << bestMove.row << "," << bestMove.col << ": " << bestMove.score << std::endl;
 
     return bestMove;
