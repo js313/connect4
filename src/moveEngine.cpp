@@ -6,6 +6,7 @@
 
 #include "moveEngine.h"
 
+// TODO: Check for beak patterns like in Mark robers video
 int MoveEngine::EvaluatePos(const std::unique_ptr<Board> &pos, SIDE side)
 {
     const SIDE winner = pos->CheckBoardState();
@@ -17,7 +18,7 @@ int MoveEngine::EvaluatePos(const std::unique_ptr<Board> &pos, SIDE side)
     int score = 0;
 
     // Position based scoring
-    int posBasedWeights[] = {0, 1, 2, 3, 2, 1, 0};
+    int posBasedWeights[] = {0, 1, 2, 6, 2, 1, 0};
     for (int row = 0; row < ROWS; row++)
     {
         for (int col = 0; col < COLS; col++)
